@@ -5,8 +5,11 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
+import pl.nqriver.beer.api.BeerResource;
+import pl.nqriver.beer.domain.Beer;
 import pl.nqriver.brewery.api.BreweryResource;
 import pl.nqriver.brewery.api.BreweryResource.BreweryResponse;
 
@@ -36,15 +39,6 @@ public class BreweryCrudFacade {
         return brewery.toResponse();
     }
 
-    private Optional<byte[]> convertImgToByteArray(FileUpload image) {
-        try {
-            return Optional.of(Files.readAllBytes(image.filePath()));
-        } catch (IOException ex) {
-            Log.error("Error occurred trying to read uploaded image: {}", ex);
-            return Optional.empty();
-        }
-    }
-
     @Transactional
     public BreweryResponse create(BreweryResource.BreweryCreateRequest breweryCreateRequest) {
 
@@ -64,5 +58,23 @@ public class BreweryCrudFacade {
                 .stream()
                 .map(Brewery::toResponse)
                 .toList();
+    }
+
+    public List<BeerResource.BeerResponse> getProducedBeers(UUID breweryId) {
+        return breweryRepository.findByIdOptional(breweryId)
+                .orElseThrow(() -> new BadRequestException("Cannot find brewery"))
+                .getProducedBeers()
+                .stream()
+                .map(Beer::toResponse)
+                .toList();
+    }
+
+    private Optional<byte[]> convertImgToByteArray(FileUpload image) {
+        try {
+            return Optional.of(Files.readAllBytes(image.filePath()));
+        } catch (IOException ex) {
+            Log.error("Error occurred trying to read uploaded image: {}", ex);
+            return Optional.empty();
+        }
     }
 }

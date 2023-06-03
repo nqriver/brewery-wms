@@ -40,27 +40,20 @@ VALUES (uuid_generate_v4(), 'Beer 5', 5, 5.2, 330, 4.8, 'Light', 'Description 5'
        (uuid_generate_v4(), 'Beer 10', 10, 4.5, 500, 4.0, 'Golden', 'Description 10', 3.19);
 
 -- Define and use CTEs for the first INSERT INTO operation
-WITH selected_breweries AS (
-    SELECT id
-    FROM breweries
-             LIMIT 10
-    )
-INSERT INTO brewery_images (brewery_id, image)
-SELECT id, E'\\x' FROM selected_breweries;
+-- WITH selected_breweries AS (SELECT id
+--                             FROM breweries LIMIT 10
+--     )
+-- INSERT
+-- INTO brewery_images (brewery_id, image)
+-- SELECT id, E '\\x'
+-- FROM selected_breweries;
 
 -- Define and use CTEs for the second INSERT INTO operation
-WITH selected_breweries AS (
-    SELECT id
-    FROM breweries
-             LIMIT 10
-    ), selected_beers AS (
-SELECT id
-FROM beers
-    LIMIT 10
-    ), joined_breweries_beers AS (
-SELECT breweries.id AS brewery_id, beers.id AS beer_id
-FROM selected_breweries breweries, selected_beers beers
-    LIMIT 10
-    )
-INSERT INTO brewery_beer (brewery_id, beer_id)
-SELECT brewery_id, beer_id FROM joined_breweries_beers;
+WITH selected_breweries AS (SELECT id FROM breweries),
+     selected_beers AS (SELECT id FROM beers),
+     joined_breweries_beers AS (SELECT breweries.id AS brewery_id, beers.id AS beer_id FROM selected_breweries breweries CROSS JOIN selected_beers beers)
+
+INSERT
+INTO brewery_beer (brewery_id, beer_id)
+SELECT brewery_id, beer_id
+FROM joined_breweries_beers;

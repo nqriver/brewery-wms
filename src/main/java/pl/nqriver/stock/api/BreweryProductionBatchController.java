@@ -1,13 +1,14 @@
-package pl.nqriver.stock;
+package pl.nqriver.stock.api;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import pl.nqriver.stock.domain.BreweryProductionBatch;
+import pl.nqriver.stock.domain.BreweryProductionBatchDao;
 
 import java.util.List;
 import java.util.UUID;
 
-@Path("/breweries/batches")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class BreweryProductionBatchController {
@@ -16,31 +17,37 @@ public class BreweryProductionBatchController {
     BreweryProductionBatchDao dao;
 
     @GET
-    @Path("/{id}")
+    @Path("batches/{id}")
     public BreweryProductionBatch get(@PathParam("id") UUID id) {
         return dao.findById(id);
     }
 
-    @POST
-    public void create(BreweryProductionBatch breweryProductionBatch) {
-        dao.save(breweryProductionBatch);
-    }
     @GET
+    @Path("batches")
     public List<BreweryProductionBatch> getAll() {
         return dao.findAll().all();
     }
 
-    @PUT
-    public void update(BreweryProductionBatch breweryProductionBatch) {
-        dao.update(breweryProductionBatch);
-    }
 
     @DELETE
-    @Path("/{id}")
+    @Path("batches/{id}")
     public void delete(@PathParam("id") UUID id) {
         BreweryProductionBatch breweryProductionBatch = dao.findById(id);
         if (breweryProductionBatch != null) {
             dao.delete(breweryProductionBatch);
         }
     }
+
+    @Path("/breweries/{breweryId}/batches")
+    @GET
+    public List<BreweryProductionBatch> getByBreweryId(@PathParam("breweryId") UUID breweryId) {
+        return dao.findByBreweryId(breweryId).all();
+    }
+
+    @Path("/beers/{beerId}/batches")
+    @GET
+    public List<BreweryProductionBatch> getByBeerId(@PathParam("beerId") UUID beerId) {
+        return dao.findByBeerId(beerId).all();
+    }
+
 }

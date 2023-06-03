@@ -5,8 +5,8 @@ import io.quarkus.vertx.ConsumeEvent;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import pl.nqriver.stock.BreweryProductionBatch;
-import pl.nqriver.stock.BreweryProductionBatchDao;
+import pl.nqriver.stock.domain.BreweryProductionBatch;
+import pl.nqriver.stock.domain.BreweryProductionBatchDao;
 import pl.nqriver.warehouse.BeerBatchProducer.BeerBatchProducedEvent;
 
 @ApplicationScoped

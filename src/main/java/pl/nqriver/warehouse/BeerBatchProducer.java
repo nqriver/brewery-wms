@@ -24,7 +24,12 @@ public class BeerBatchProducer {
 
     public record BeerBatchProducedEvent(
             UUID breweryId,
+            String breweryName,
+            String internalBreweryCode,
+            String breweryCity,
             UUID beerId,
+            String beerStyle,
+            String beerName,
             int quantity,
             long totalLiters,
             String productionBatchCode,
@@ -59,7 +64,12 @@ public class BeerBatchProducer {
 
                             BeerBatchProducedEvent event = new BeerBatchProducedEvent(
                                     brewery.getId(),
+                                    brewery.getName(),
+                                    brewery.getInternalCode(),
+                                    brewery.getCity(),
                                     beer.getId(),
+                                    beer.getStyle().getName(),
+                                    beer.getName(),
                                     quantity,
                                     liters,
                                     RandomString.make(5) + BATCH_COUNTER.getAndIncrement(),

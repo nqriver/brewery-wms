@@ -5,9 +5,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import pl.nqriver.beer.api.BeerResource;
+import pl.nqriver.beer.api.BeerResource.BeerResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 @ApplicationScoped
 public class BeerFacade {
@@ -21,26 +24,31 @@ public class BeerFacade {
 
 
     @Transactional
-    public Beer addNewBeer(BeerResource.CreateBeerRequest createBeerRequest) {
+    public BeerResponse addNewBeer(BeerResource.CreateBeerRequest createBeerRequest) {
         Beer beer = beerStyleRepository.findByIdOptional(createBeerRequest.beerStyleId())
                 .map(style -> Beer.fromRequest(createBeerRequest, style))
                 .orElseThrow(() -> new BadRequestException("Cannot find specified beer style"));
 
         beerRepository.persist(beer);
-        return beer;
+        return beer.toResponse();
     }
 
-    public List<BeerResource.BeerResponse> listAll() {
+    public List<BeerResponse> listAll() {
         return beerRepository.findAll(Sort.ascending("name"))
                 .stream()
                 .map(Beer::toResponse)
                 .toList();
     }
 
-    public List<BeerResource.BeerResponse> getBeersByStyle(Long id) {
+    public List<BeerResponse> getBeersByStyle(Long id) {
         return beerRepository.find("style.id", id)
                 .stream()
                 .map(Beer::toResponse)
                 .toList();
+    }
+
+    public BeerResponse findById(UUID id) {
+        return beerRepository.findByIdOptional(id).orElseThrow(() -> new NotFoundException("Beer of given id does not exist"))
+                .toResponse();
     }
 }

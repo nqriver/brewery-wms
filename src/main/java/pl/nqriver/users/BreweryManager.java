@@ -1,5 +1,6 @@
 package pl.nqriver.users;
 
+import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.persistence.*;
 import pl.nqriver.brewery.domain.Brewery;
 
@@ -24,7 +25,7 @@ public class BreweryManager {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "phone_number")
@@ -103,4 +104,22 @@ public class BreweryManager {
     public void setManagedBrewery(Brewery managedBrewery) {
         this.managedBrewery = managedBrewery;
     }
+
+    static BreweryManager fromRequest(BreweryManagerResource.ManagerRegistrationRequest registrationRequest, Brewery brewery) {
+        BreweryManager manager = new BreweryManager();
+        manager.setManagedBrewery(brewery);
+        manager.setName(registrationRequest.name());
+        manager.setLogin(registrationRequest.login());
+        manager.setEmail(registrationRequest.email());
+        manager.setPassword(BcryptUtil.bcryptHash(registrationRequest.password()));
+        manager.setPhoneNumber(registrationRequest.phoneNumber());
+        manager.setHireDate(Instant.now());
+        return manager;
+    }
+
+    public BreweryManagerResource.BreweryManagerResponse toResponse() {
+        return new BreweryManagerResource.BreweryManagerResponse(this.id, this.name, this.login, this.email,
+                this.phoneNumber, this.hireDate, this.managedBrewery.getId());
+    }
+
 }

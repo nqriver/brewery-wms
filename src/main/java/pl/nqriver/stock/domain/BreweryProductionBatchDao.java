@@ -1,11 +1,7 @@
-package pl.nqriver.stock;
+package pl.nqriver.stock.domain;
 
 import com.datastax.oss.driver.api.core.PagingIterable;
-import com.datastax.oss.driver.api.mapper.annotations.Dao;
-import com.datastax.oss.driver.api.mapper.annotations.Delete;
-import com.datastax.oss.driver.api.mapper.annotations.Insert;
-import com.datastax.oss.driver.api.mapper.annotations.Select;
-import com.datastax.oss.driver.api.mapper.annotations.Update;
+import com.datastax.oss.driver.api.mapper.annotations.*;
 
 import java.util.UUID;
 
@@ -20,10 +16,19 @@ public interface BreweryProductionBatchDao {
     @Update
     void update(BreweryProductionBatch breweryProductionBatch);
 
+
+
     @Delete
     void delete(BreweryProductionBatch breweryProductionBatch);
 
     @Select
     PagingIterable<BreweryProductionBatch> findAll();
+
+    @Query("SELECT * FROM batches_by_brewery WHERE brewery_id = :breweryId")
+    PagingIterable<BreweryProductionBatch> findByBreweryId(@CqlName("breweryId") UUID breweryId);
+
+    @Query("SELECT * FROM batches_by_beer WHERE beer_id = :beerId")
+    PagingIterable<BreweryProductionBatch> findByBeerId(@CqlName("beerId") UUID beerId);
+
 }
 

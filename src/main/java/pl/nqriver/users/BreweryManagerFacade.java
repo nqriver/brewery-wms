@@ -8,10 +8,8 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import pl.nqriver.brewery.domain.Brewery;
 import pl.nqriver.brewery.domain.BreweryFacade;
-import pl.nqriver.users.BreweryManagerResource.ManagerRegistrationRequest;
 import pl.nqriver.users.BreweryManagerResource.ManagerLoginRequest;
-
-import java.time.Instant;
+import pl.nqriver.users.BreweryManagerResource.ManagerRegistrationRequest;
 
 @ApplicationScoped
 public class BreweryManagerFacade {
@@ -26,20 +24,19 @@ public class BreweryManagerFacade {
     JwtService jwtService;
 
     @Transactional
-    public BreweryManager registerNewBreweryManager(ManagerRegistrationRequest registrationRequest) {
+    public BreweryManagerResource.BreweryManagerResponse registerNewBreweryManager(ManagerRegistrationRequest registrationRequest) {
+        if (managerRepository.findByLogin(registrationRequest.login()).isPresent()) {
+            throw new BadRequestException("Login already taken");
+        } else if (managerRepository.findByEmail(registrationRequest.email()).isPresent()) {
+            throw new BadRequestException("Email already taken");
+        }
+
         Brewery brewery = breweryFacade.findByIdOptional(registrationRequest.managedBreweryId())
                 .orElseThrow(() -> new BadRequestException("Cannot find managed brewery"));
 
-        BreweryManager manager = new BreweryManager();
-        manager.setManagedBrewery(brewery);
-        manager.setName(registrationRequest.name());
-        manager.setLogin(registrationRequest.login());
-        manager.setEmail(registrationRequest.email());
-        manager.setPassword(BcryptUtil.bcryptHash(registrationRequest.password()));
-        manager.setPhoneNumber(registrationRequest.phoneNumber());
-        manager.setHireDate(Instant.now());
+        BreweryManager manager = BreweryManager.fromRequest(registrationRequest, brewery);
         managerRepository.persist(manager);
-        return manager;
+        return manager.toResponse();
     }
 
 

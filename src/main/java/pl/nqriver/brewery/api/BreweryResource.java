@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
+import pl.nqriver.beer.api.BeerResource.BeerResponse;
 import pl.nqriver.brewery.domain.BreweryCrudFacade;
 
 import java.util.List;
@@ -30,9 +31,16 @@ public class BreweryResource {
     }
 
     @GET
-    @Path("")
     public Response getBreweries() {
         List<BreweryResponse> breweries = breweryCrudFacade.getAll();
+        return Response.status(Response.Status.OK).entity(breweries).build();
+    }
+
+
+    @GET
+    @Path("{breweryId}/beers")
+    public Response getProducedBeers(@PathParam("breweryId") UUID breweryId) {
+        List<BeerResponse> breweries = breweryCrudFacade.getProducedBeers(breweryId);
         return Response.status(Response.Status.OK).entity(breweries).build();
     }
 

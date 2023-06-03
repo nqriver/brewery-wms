@@ -4,9 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import pl.nqriver.beer.domain.Beer;
 import pl.nqriver.beer.domain.BeerFacade;
-import pl.nqriver.beer.domain.BeerRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,9 +16,6 @@ import java.util.UUID;
 public class BeerResource {
 
     @Inject
-    BeerRepository beerRepository;
-
-    @Inject
     BeerFacade beerFacade;
 
     @GET
@@ -29,14 +24,14 @@ public class BeerResource {
     }
 
     @POST
-    public Beer addBeer(CreateBeerRequest createBeerRequest) {
+    public BeerResponse addBeer(CreateBeerRequest createBeerRequest) {
         return beerFacade.addNewBeer(createBeerRequest);
     }
 
     @GET
     @Path("/{id}")
-    public Beer getBeer(@PathParam("id") Long id) {
-        return beerRepository.findById(id);
+    public BeerResponse getBeer(@PathParam("id") UUID id) {
+        return beerFacade.findById(id);
     }
 
     public record CreateBeerRequest(
@@ -55,6 +50,7 @@ public class BeerResource {
             UUID id,
             String name,
             String beerStyleName,
+            Long beerStyleId,
             double ibu,
             double bottleCapacity,
             double alcoholPercentage,

@@ -55,6 +55,7 @@ public class Beer {
                 getId(),
                 getName(),
                 getStyle().getName(),
+                getStyle().getId(),
                 getIbu(),
                 getBottleCapacity(),
                 getAlcoholPercentage(),

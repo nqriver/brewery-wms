@@ -11,4 +11,8 @@ public class BreweryManagerRepository implements PanacheRepositoryBase<BreweryMa
     public Optional<BreweryManager> findByLogin(String login) {
         return find("login", login).firstResultOptional();
     }
+
+    public Optional<BreweryManager> findByEmail(String email) {
+        return find("email", email).firstResultOptional();
+    }
 }

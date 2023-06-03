@@ -10,6 +10,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -25,7 +26,7 @@ public class BreweryManagerResource {
     @Path("/register")
     @Transactional
     public Response register(ManagerRegistrationRequest request) {
-        BreweryManager manager = managerFacade.registerNewBreweryManager(request);
+        BreweryManagerResponse manager = managerFacade.registerNewBreweryManager(request);
         return Response.ok(manager).status(Response.Status.CREATED).build();
     }
 
@@ -35,6 +36,11 @@ public class BreweryManagerResource {
     public Response login(ManagerLoginRequest request) {
         String jwt = managerFacade.login(request);
         return Response.ok(new JwtTokenResponse(jwt)).build();
+    }
+
+    public record BreweryManagerResponse(UUID id, String name, String login, String email, String phoneNumber,
+                                         Instant hireDate, UUID managedBreweryId) {
+
     }
 
 
