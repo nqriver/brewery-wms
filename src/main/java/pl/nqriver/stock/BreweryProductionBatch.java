@@ -3,6 +3,8 @@ package pl.nqriver.stock;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import pl.nqriver.warehouse.BeerBatchProducer;
+import pl.nqriver.warehouse.BeerBatchProducer.BeerBatchProducedEvent;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -31,6 +33,19 @@ public class BreweryProductionBatch {
 
     @CqlName("expirationTimestamp")
     private Instant expirationTimestamp;
+
+
+    public static BreweryProductionBatch fromEvent(BeerBatchProducedEvent event) {
+        BreweryProductionBatch breweryProductionBatch = new BreweryProductionBatch();
+        breweryProductionBatch.setProductionBatchCode(event.productionBatchCode());
+        breweryProductionBatch.setProductionTimestamp(event.productionTimestamp());
+        breweryProductionBatch.setBreweryId(event.breweryId());
+        breweryProductionBatch.setBeerId(event.beerId());
+        breweryProductionBatch.setTotalLiters(event.totalLiters());
+        breweryProductionBatch.setId(UUID.randomUUID());
+        breweryProductionBatch.setExpirationTimestamp(event.expirationTimestamp());
+        return breweryProductionBatch;
+    }
 
 
     public UUID getId() {

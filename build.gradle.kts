@@ -22,7 +22,6 @@ dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-arc")
     implementation("io.quarkus:quarkus-resteasy-reactive")
-    implementation("io.quarkus:quarkus-oidc")
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:quarkus-cassandra-bom:${quarkusPlatformVersion}"))
     implementation("com.datastax.oss.quarkus:cassandra-quarkus-client")
     annotationProcessor("com.datastax.oss.quarkus:cassandra-quarkus-mapper-processor:1.2.0")

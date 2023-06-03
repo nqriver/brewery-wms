@@ -1,13 +1,13 @@
 package pl.nqriver.warehouse;
 
+import io.quarkus.logging.Log;
 import io.quarkus.vertx.ConsumeEvent;
+import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import pl.nqriver.stock.BreweryProductionBatch;
 import pl.nqriver.stock.BreweryProductionBatchDao;
 import pl.nqriver.warehouse.BeerBatchProducer.BeerBatchProducedEvent;
-
-import java.util.UUID;
 
 @ApplicationScoped
 public class BeerBatchProductionHandler {
@@ -17,15 +17,11 @@ public class BeerBatchProductionHandler {
 
 
     @ConsumeEvent(BeerBatchProducer.BEER_BATCH_PRODUCED_TOPIC)
+    @Blocking
     public void consumeEvent(BeerBatchProducedEvent event) {
-        BreweryProductionBatch breweryProductionBatch = new BreweryProductionBatch();
-        breweryProductionBatch.setProductionBatchCode(event.productionBatchCode());
-        breweryProductionBatch.setProductionTimestamp(event.productionTimestamp());
-        breweryProductionBatch.setBreweryId(event.breweryId());
-        breweryProductionBatch.setBeerId(event.beerId());
-        breweryProductionBatch.setTotalLiters(event.totalLiters());
-        breweryProductionBatch.setId(UUID.randomUUID());
-        breweryProductionBatch.setExpirationTimestamp(event.expirationTimestamp());
+        BreweryProductionBatch breweryProductionBatch = BreweryProductionBatch.fromEvent(event);
         productionBatchDao.save(breweryProductionBatch);
+        Log.infof("New brewery batch registered {%s}", event);
     }
+
 }
