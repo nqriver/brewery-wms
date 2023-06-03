@@ -1,0 +1,7 @@
+version: '3'
+services:
+  scylladb:
+    image: scylladb/scylla:latest
+    command: --smp 1 --overprovisioned 1 --developer-mode 1
+    ports:
+      - "9042:9042"

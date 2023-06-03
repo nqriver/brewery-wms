@@ -1,0 +1,33 @@
+package pl.nqriver.beer.domain;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "beer_styles")
+public class BeerStyle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "name")
+    private String name;
+
+    public BeerStyle() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
