@@ -8,7 +8,6 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -25,17 +24,16 @@ public class BreweryManagerResource {
     @POST
     @Path("/register")
     @Transactional
-    public Response register(ManagerRegistrationRequest request) {
-        BreweryManagerResponse manager = managerFacade.registerNewBreweryManager(request);
-        return Response.ok(manager).status(Response.Status.CREATED).build();
+    public BreweryManagerResponse register(ManagerRegistrationRequest request) {
+        return  managerFacade.registerNewBreweryManager(request);
     }
 
 
     @POST
     @Path("/login")
-    public Response login(ManagerLoginRequest request) {
+    public JwtTokenResponse login(ManagerLoginRequest request) {
         String jwt = managerFacade.login(request);
-        return Response.ok(new JwtTokenResponse(jwt)).build();
+        return new JwtTokenResponse(jwt);
     }
 
     public record BreweryManagerResponse(UUID id, String name, String login, String email, String phoneNumber,

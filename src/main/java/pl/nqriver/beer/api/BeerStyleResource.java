@@ -1,7 +1,9 @@
 package pl.nqriver.beer.api;
 
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import pl.nqriver.beer.domain.BeerFacade;
@@ -14,6 +16,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @ApplicationScoped
+@Authenticated
 public class BeerStyleResource {
 
     @Inject
@@ -34,6 +37,7 @@ public class BeerStyleResource {
 
 
     @POST
+    @Transactional
     public BeerStyle addBeerStyle(BeerStyle beerStyle) {
         beerStyleRepository.persist(beerStyle);
         return beerStyle;

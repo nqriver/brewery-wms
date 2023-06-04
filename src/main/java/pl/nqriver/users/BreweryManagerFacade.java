@@ -11,6 +11,9 @@ import pl.nqriver.brewery.domain.BreweryFacade;
 import pl.nqriver.users.BreweryManagerResource.ManagerLoginRequest;
 import pl.nqriver.users.BreweryManagerResource.ManagerRegistrationRequest;
 
+import java.util.Objects;
+import java.util.UUID;
+
 @ApplicationScoped
 public class BreweryManagerFacade {
 
@@ -22,6 +25,13 @@ public class BreweryManagerFacade {
 
     @Inject
     JwtService jwtService;
+
+
+    public boolean isBreweryManagedByManager(UUID managerId, UUID breweryId) {
+        return managerRepository.findByIdOptional(managerId)
+                .map(manager -> Objects.equals(manager.getManagedBrewery().getId(), breweryId))
+                .orElse(false);
+    }
 
     @Transactional
     public BreweryManagerResource.BreweryManagerResponse registerNewBreweryManager(ManagerRegistrationRequest registrationRequest) {

@@ -1,5 +1,7 @@
 package pl.nqriver.stock.api;
 
+import io.quarkus.security.Authenticated;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -9,9 +11,11 @@ import pl.nqriver.stock.domain.BreweryProductionBatchDao;
 import java.util.List;
 import java.util.UUID;
 
+@ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class BreweryProductionBatchController {
+@Authenticated
+public class BreweryProductionBatchResource {
 
     @Inject
     BreweryProductionBatchDao dao;

@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 import pl.nqriver.beer.api.BeerResource;
 import pl.nqriver.beer.api.BeerResource.BeerResponse;
 
@@ -27,7 +28,8 @@ public class BeerFacade {
     public BeerResponse addNewBeer(BeerResource.CreateBeerRequest createBeerRequest) {
         Beer beer = beerStyleRepository.findByIdOptional(createBeerRequest.beerStyleId())
                 .map(style -> Beer.fromRequest(createBeerRequest, style))
-                .orElseThrow(() -> new BadRequestException("Cannot find specified beer style"));
+                .orElseThrow(() -> new BadRequestException("Cannot find specified beer style",
+                        Response.status(400, "Cannot find specified beer style").build()));
 
         beerRepository.persist(beer);
         return beer.toResponse();
