@@ -14,6 +14,7 @@ import java.util.UUID;
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Path("stock")
 @Authenticated
 public class BreweryProductionBatchResource {
 

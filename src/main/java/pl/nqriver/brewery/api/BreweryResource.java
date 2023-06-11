@@ -1,7 +1,7 @@
 package pl.nqriver.brewery.api;
 
 import io.quarkus.security.Authenticated;
-import io.quarkus.security.UnauthorizedException;
+import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -9,11 +9,12 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import pl.nqriver.beer.api.BeerResource.BeerResponse;
 import pl.nqriver.brewery.domain.BreweryCrudFacade;
 import pl.nqriver.commons.LoggedInUserService;
+import pl.nqriver.commons.ServiceErrorCode;
+import pl.nqriver.commons.ServiceException;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,7 @@ public class BreweryResource {
     }
 
     @GET
+    @PermitAll
     public List<BreweryResponse> getBreweries() {
         return breweryCrudFacade.getAll();
     }
@@ -47,9 +49,35 @@ public class BreweryResource {
     @Path("{breweryId}/beers")
     public List<BeerResponse> getProducedBeers(@PathParam("breweryId") UUID breweryId) {
         if (!loggedInUserService.checkBreweryPermissions(breweryId)) {
-            throw new UnauthorizedException();
+            throw new ServiceException(ServiceErrorCode.BREWERY_ACCESS_FORBIDDEN);
         }
         return breweryCrudFacade.getProducedBeers(breweryId);
+    }
+
+    @POST
+    @Path("{breweryId}/beers/{beerId}")
+    public BeerResponse addProducedBeer(@PathParam("breweryId") UUID breweryId, @PathParam("beerId") UUID beerId) {
+        if (!loggedInUserService.checkBreweryPermissions(breweryId)) {
+            throw new ServiceException(ServiceErrorCode.BREWERY_ACCESS_FORBIDDEN);
+        }
+        return breweryCrudFacade.addProducedBeer(breweryId, beerId);
+    }
+
+
+    @PUT
+    @Path("{breweryId}")
+    public BreweryResponse edit(@PathParam("breweryId") UUID breweryId, BreweryEditRequest editRequest) {
+        return breweryCrudFacade.edit(breweryId, editRequest);
+    }
+
+
+    @GET
+    @Path("{breweryId}")
+    public BreweryDetailedResponse get(@PathParam("breweryId") UUID breweryId) {
+        if (!loggedInUserService.checkBreweryPermissions(breweryId)) {
+            throw new ServiceException(ServiceErrorCode.BREWERY_ACCESS_FORBIDDEN);
+        }
+        return breweryCrudFacade.get(breweryId);
     }
 
     @POST
@@ -57,7 +85,7 @@ public class BreweryResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadBreweryImages(@PathParam("breweryId") UUID breweryId, List<Image> images) {
         if (!loggedInUserService.checkBreweryPermissions(breweryId)) {
-            throw new UnauthorizedException();
+            throw new ServiceException(ServiceErrorCode.BREWERY_ACCESS_FORBIDDEN);
         }
 
         if (images == null || images.isEmpty()) {
@@ -68,7 +96,15 @@ public class BreweryResource {
         return Response.status(Response.Status.CREATED).entity(brewery).build();
     }
 
-    public record BreweryCreateRequest(String name, String city, String postalCode, int surfaceArea) {
+    public record BreweryDetailedResponse(BreweryResponse brewery, List<BeerResponse> producedBeers) {
+    }
+
+
+    public record BreweryCreateRequest(String name, String city, String postalCode, int surfaceArea,
+                                       String internalCode) {
+    }
+
+    public record BreweryEditRequest(String name, String city, String postalCode, int surfaceArea) {
     }
 
     public record BreweryResponse(UUID id, String name, String city, String postalCode, int surfaceArea) {

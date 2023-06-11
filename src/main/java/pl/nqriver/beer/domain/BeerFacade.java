@@ -53,4 +53,8 @@ public class BeerFacade {
         return beerRepository.findByIdOptional(id).orElseThrow(() -> new NotFoundException("Beer of given id does not exist"))
                 .toResponse();
     }
+
+    public Beer find(UUID beerId) {
+        return beerRepository.findByIdOptional(beerId).orElseThrow(NotFoundException::new);
+    }
 }

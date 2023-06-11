@@ -1,9 +1,11 @@
 package pl.nqriver.brewery.domain;
+
 import jakarta.persistence.*;
 import pl.nqriver.beer.domain.Beer;
 import pl.nqriver.brewery.api.BreweryResource;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -19,7 +21,7 @@ public class Brewery {
     @Column(name = "city")
     private String city;
 
-    @Column(name = "internal_code")
+    @Column(name = "internal_code", unique = true)
     private String internalCode;
 
     @Column(name = "postal_code")
@@ -30,10 +32,10 @@ public class Brewery {
 
     @ElementCollection
     @CollectionTable(
-            name="brewery_images",
-            joinColumns=@JoinColumn(name="brewery_id")
+            name = "brewery_images",
+            joinColumns = @JoinColumn(name = "brewery_id")
     )
-    @Column(name="image")
+    @Column(name = "image")
     private List<byte[]> images;
 
     @ManyToMany
@@ -113,5 +115,22 @@ public class Brewery {
 
     public BreweryResource.BreweryResponse toResponse() {
         return new BreweryResource.BreweryResponse(id, name, city, postalCode, surfaceArea);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Brewery brewery = (Brewery) o;
+        return Objects.equals(internalCode, brewery.internalCode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(internalCode);
+    }
+
+    public void addBeer(Beer beer) {
+        this.producedBeers.add(beer);
     }
 }

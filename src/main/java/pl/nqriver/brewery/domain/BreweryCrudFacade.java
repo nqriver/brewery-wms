@@ -6,12 +6,15 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
-import pl.nqriver.beer.api.BeerResource;
+import pl.nqriver.beer.api.BeerResource.BeerResponse;
 import pl.nqriver.beer.domain.Beer;
+import pl.nqriver.beer.domain.BeerFacade;
 import pl.nqriver.brewery.api.BreweryResource;
+import pl.nqriver.brewery.api.BreweryResource.BreweryDetailedResponse;
 import pl.nqriver.brewery.api.BreweryResource.BreweryResponse;
+import pl.nqriver.commons.ServiceErrorCode;
+import pl.nqriver.commons.ServiceException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,10 +28,14 @@ public class BreweryCrudFacade {
     @Inject
     BreweryRepository breweryRepository;
 
+    @Inject
+    BeerFacade beerFacade;
+
 
     @Transactional
     public BreweryResponse addBreweryImages(UUID breweryId, List<FileUpload> uploadedFiles) {
-        Brewery brewery = breweryRepository.findByIdOptional(breweryId).orElseThrow(NotFoundException::new);
+        Brewery brewery = breweryRepository.findByIdOptional(breweryId)
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
 
         uploadedFiles.stream()
                 .map(this::convertImgToByteArray)
@@ -47,6 +54,7 @@ public class BreweryCrudFacade {
         brewery.setCity(breweryCreateRequest.city());
         brewery.setPostalCode(breweryCreateRequest.postalCode());
         brewery.setSurfaceArea(breweryCreateRequest.surfaceArea());
+        brewery.setInternalCode(breweryCreateRequest.internalCode());
 
         breweryRepository.persist(brewery);
         return brewery.toResponse();
@@ -60,7 +68,15 @@ public class BreweryCrudFacade {
                 .toList();
     }
 
-    public List<BeerResource.BeerResponse> getProducedBeers(UUID breweryId) {
+    public BreweryDetailedResponse get(UUID id) {
+        Brewery brewery = breweryRepository.findByIdOptional(id)
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+
+        List<BeerResponse> producedBeers = brewery.getProducedBeers().stream().map(Beer::toResponse).toList();
+        return new BreweryDetailedResponse(brewery.toResponse(), producedBeers);
+    }
+
+    public List<BeerResponse> getProducedBeers(UUID breweryId) {
         return breweryRepository.findByIdOptional(breweryId)
                 .orElseThrow(() -> new BadRequestException("Cannot find brewery"))
                 .getProducedBeers()
@@ -76,5 +92,37 @@ public class BreweryCrudFacade {
             Log.error("Error occurred trying to read uploaded image: {}", ex);
             return Optional.empty();
         }
+    }
+
+    @Transactional
+    public BeerResponse addProducedBeer(UUID breweryId, UUID beerId) {
+        Brewery brewery = breweryRepository.findByIdOptional(breweryId)
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+        Beer beer = beerFacade.find(beerId);
+        brewery.addBeer(beer);
+        breweryRepository.persist(brewery);
+        return beer.toResponse();
+    }
+
+
+    @Transactional
+    public BreweryResponse edit(UUID breweryId, BreweryResource.BreweryEditRequest editRequest) {
+        Brewery brewery = breweryRepository.findByIdOptional(breweryId)
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+
+        if (editRequest.city() != null) {
+            brewery.setCity(editRequest.city());
+        }
+        if (editRequest.name() != null) {
+            brewery.setName(editRequest.name());
+        }
+        if (editRequest.postalCode() != null) {
+            brewery.setPostalCode(editRequest.postalCode());
+        }
+        if (editRequest.surfaceArea() > 0) {
+            brewery.setSurfaceArea(editRequest.surfaceArea());
+        }
+        breweryRepository.persist(brewery);
+        return brewery.toResponse();
     }
 }

@@ -7,7 +7,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import pl.nqriver.stock.domain.BreweryProductionBatch;
 import pl.nqriver.stock.domain.BreweryProductionBatchDao;
-import pl.nqriver.warehouse.BeerBatchProducer.BeerBatchProducedEvent;
 
 @ApplicationScoped
 public class BeerBatchProductionHandler {

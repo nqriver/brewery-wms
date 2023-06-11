@@ -12,7 +12,6 @@ import pl.nqriver.brewery.domain.BreweryFacade;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,22 +20,6 @@ public class BeerBatchProducer {
 
     public static final String BEER_BATCH_PRODUCED_TOPIC = "beer-batch-produced";
     public static final AtomicInteger BATCH_COUNTER = new AtomicInteger(0);
-
-    public record BeerBatchProducedEvent(
-            UUID breweryId,
-            String breweryName,
-            String internalBreweryCode,
-            String breweryCity,
-            UUID beerId,
-            String beerStyle,
-            String beerName,
-            int quantity,
-            long totalLiters,
-            String productionBatchCode,
-            Instant productionTimestamp,
-            Instant expirationTimestamp
-    ) {
-    }
 
 
     @Inject
@@ -47,7 +30,7 @@ public class BeerBatchProducer {
     BreweryFacade breweryFacade;
 
 
-    @Scheduled(every = "10s")
+    @Scheduled(every = "3600s")
     void produceBeers() {
         emitBeerBatchProduced();
     }
@@ -83,6 +66,4 @@ public class BeerBatchProducer {
                         () -> Log.warn("Cannot find beer production goal set to any brewery. No brewery produces no beer"));
 
     }
-
-
 }

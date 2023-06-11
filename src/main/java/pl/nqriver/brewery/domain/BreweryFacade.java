@@ -36,4 +36,8 @@ public class BreweryFacade {
     public Optional<Brewery> findByIdOptional(UUID breweryId) {
         return breweryRepository.findByIdOptional(breweryId);
     }
+
+    public List<Brewery> findAll() {
+        return breweryRepository.listAll();
+    }
 }
