@@ -1,4 +1,4 @@
-package pl.nqriver.users;
+package pl.nqriver.managers;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;

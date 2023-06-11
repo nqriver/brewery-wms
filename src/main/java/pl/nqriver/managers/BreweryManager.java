@@ -1,10 +1,13 @@
-package pl.nqriver.users;
+package pl.nqriver.managers;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.persistence.*;
 import pl.nqriver.brewery.domain.Brewery;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -34,9 +37,13 @@ public class BreweryManager {
     @Column(name = "hire_date")
     private Instant hireDate;
 
-    @OneToOne
-    @JoinColumn(name = "brewery_id", referencedColumnName = "id")
-    private Brewery managedBrewery;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "manager_breweries",
+            joinColumns = @JoinColumn(name = "manager_id"),
+            inverseJoinColumns = @JoinColumn(name = "brewery_id")
+    )
+    private Set<Brewery> managedBreweries = new HashSet<>();
 
     public BreweryManager() {
     }
@@ -97,17 +104,21 @@ public class BreweryManager {
         this.hireDate = hireDate;
     }
 
-    public Brewery getManagedBrewery() {
-        return managedBrewery;
+    public Set<Brewery> getManagedBreweries() {
+        return managedBreweries;
     }
 
-    public void setManagedBrewery(Brewery managedBrewery) {
-        this.managedBrewery = managedBrewery;
+    public void setManagedBreweries(Set<Brewery> managedBreweries) {
+        this.managedBreweries = managedBreweries;
     }
 
-    static BreweryManager fromRequest(BreweryManagerResource.ManagerRegistrationRequest registrationRequest, Brewery brewery) {
+    public void removePermissionForBrewery(Brewery brewery) {
+        this.managedBreweries.remove(brewery);
+    }
+
+    static BreweryManager fromRequest(BreweryManagerResource.ManagerRegistrationRequest registrationRequest, Collection<Brewery> breweries) {
         BreweryManager manager = new BreweryManager();
-        manager.setManagedBrewery(brewery);
+        manager.setManagedBreweries(new HashSet<>(breweries));
         manager.setName(registrationRequest.name());
         manager.setLogin(registrationRequest.login());
         manager.setEmail(registrationRequest.email());
@@ -119,7 +130,10 @@ public class BreweryManager {
 
     public BreweryManagerResource.BreweryManagerResponse toResponse() {
         return new BreweryManagerResource.BreweryManagerResponse(this.id, this.name, this.login, this.email,
-                this.phoneNumber, this.hireDate, this.managedBrewery.getId());
+                this.phoneNumber, this.hireDate);
     }
 
+    public void removeAllPermissions() {
+        this.managedBreweries.clear();
+    }
 }
