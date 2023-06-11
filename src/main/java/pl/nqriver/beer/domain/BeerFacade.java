@@ -4,11 +4,10 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.Response;
 import pl.nqriver.beer.api.BeerResource;
 import pl.nqriver.beer.api.BeerResource.BeerResponse;
+import pl.nqriver.commons.ServiceErrorCode;
+import pl.nqriver.commons.ServiceException;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +27,7 @@ public class BeerFacade {
     public BeerResponse addNewBeer(BeerResource.CreateBeerRequest createBeerRequest) {
         Beer beer = beerStyleRepository.findByIdOptional(createBeerRequest.beerStyleId())
                 .map(style -> Beer.fromRequest(createBeerRequest, style))
-                .orElseThrow(() -> new BadRequestException("Cannot find specified beer style",
-                        Response.status(400, "Cannot find specified beer style").build()));
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BEER_STYLE_NOT_FOUND));
 
         beerRepository.persist(beer);
         return beer.toResponse();
@@ -42,19 +40,34 @@ public class BeerFacade {
                 .toList();
     }
 
-    public List<BeerResponse> getBeersByStyle(Long id) {
-        return beerRepository.find("style.id", id)
+    public void delete(UUID beerId) {
+        boolean deleted = beerRepository.deleteById(beerId);
+        if (!deleted) {
+            throw new ServiceException(ServiceErrorCode.BEER_NOT_FOUND);
+        }
+    }
+
+    public List<BeerResponse> getBeersByStyle(Long styleId) {
+        return beerRepository.find("style.id", styleId)
                 .stream()
                 .map(Beer::toResponse)
                 .toList();
     }
 
     public BeerResponse findById(UUID id) {
-        return beerRepository.findByIdOptional(id).orElseThrow(() -> new NotFoundException("Beer of given id does not exist"))
+        return findOne(id)
                 .toResponse();
     }
 
     public Beer find(UUID beerId) {
-        return beerRepository.findByIdOptional(beerId).orElseThrow(NotFoundException::new);
+        return findOne(beerId);
+    }
+
+    private Beer findOne(UUID id) {
+        return beerRepository.findByIdOptional(id).orElseThrow(() -> new ServiceException(ServiceErrorCode.BEER_NOT_FOUND));
+    }
+
+    public List<Beer> getAll() {
+        return beerRepository.listAll();
     }
 }

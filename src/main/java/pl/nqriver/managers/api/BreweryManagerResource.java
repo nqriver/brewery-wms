@@ -1,4 +1,4 @@
-package pl.nqriver.managers;
+package pl.nqriver.managers.api;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -8,6 +8,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import pl.nqriver.brewery.api.BreweryResource;
+import pl.nqriver.managers.BreweryManagerFacade;
 
 import java.time.Instant;
 import java.util.List;

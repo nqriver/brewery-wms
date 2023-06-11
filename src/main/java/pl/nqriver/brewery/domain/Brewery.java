@@ -49,6 +49,17 @@ public class Brewery {
     public Brewery() {
     }
 
+    static Brewery fromRequest(BreweryResource.BreweryCreateRequest breweryCreateRequest, List<Beer> producedBeers) {
+        Brewery brewery = new Brewery();
+        brewery.setName(breweryCreateRequest.name());
+        brewery.setCity(breweryCreateRequest.city());
+        brewery.setPostalCode(breweryCreateRequest.postalCode());
+        brewery.setSurfaceArea(breweryCreateRequest.surfaceArea());
+        brewery.setInternalCode(breweryCreateRequest.internalCode());
+        brewery.setProducedBeers(producedBeers);
+        return brewery;
+    }
+
     public void addImage(byte[] bytes) {
         this.images.add(bytes);
     }

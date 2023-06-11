@@ -4,6 +4,7 @@ import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import pl.nqriver.brewery.domain.Brewery;
+import pl.nqriver.managers.domain.BreweryManager;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

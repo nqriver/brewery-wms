@@ -1,8 +1,9 @@
-package pl.nqriver.managers;
+package pl.nqriver.managers.domain;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.persistence.*;
 import pl.nqriver.brewery.domain.Brewery;
+import pl.nqriver.managers.api.BreweryManagerResource;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -116,7 +117,7 @@ public class BreweryManager {
         this.managedBreweries.remove(brewery);
     }
 
-    static BreweryManager fromRequest(BreweryManagerResource.ManagerRegistrationRequest registrationRequest, Collection<Brewery> breweries) {
+    public static BreweryManager fromRequest(BreweryManagerResource.ManagerRegistrationRequest registrationRequest, Collection<Brewery> breweries) {
         BreweryManager manager = new BreweryManager();
         manager.setManagedBreweries(new HashSet<>(breweries));
         manager.setName(registrationRequest.name());

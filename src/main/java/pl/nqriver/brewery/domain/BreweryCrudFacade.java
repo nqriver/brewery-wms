@@ -5,7 +5,6 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import pl.nqriver.beer.api.BeerResource.BeerResponse;
 import pl.nqriver.beer.domain.Beer;
@@ -18,6 +17,7 @@ import pl.nqriver.commons.ServiceException;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,14 +48,7 @@ public class BreweryCrudFacade {
 
     @Transactional
     public BreweryResponse create(BreweryResource.BreweryCreateRequest breweryCreateRequest) {
-
-        Brewery brewery = new Brewery();
-        brewery.setName(breweryCreateRequest.name());
-        brewery.setCity(breweryCreateRequest.city());
-        brewery.setPostalCode(breweryCreateRequest.postalCode());
-        brewery.setSurfaceArea(breweryCreateRequest.surfaceArea());
-        brewery.setInternalCode(breweryCreateRequest.internalCode());
-
+        Brewery brewery = Brewery.fromRequest(breweryCreateRequest, Collections.emptyList());
         breweryRepository.persist(brewery);
         return brewery.toResponse();
 
@@ -78,7 +71,7 @@ public class BreweryCrudFacade {
 
     public List<BeerResponse> getProducedBeers(UUID breweryId) {
         return breweryRepository.findByIdOptional(breweryId)
-                .orElseThrow(() -> new BadRequestException("Cannot find brewery"))
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND))
                 .getProducedBeers()
                 .stream()
                 .map(Beer::toResponse)

@@ -101,7 +101,7 @@ public class BreweryResource {
 
 
     public record BreweryCreateRequest(String name, String city, String postalCode, int surfaceArea,
-                                       String internalCode) {
+                                       String internalCode, List<UUID> producedBeers) {
     }
 
     public record BreweryEditRequest(String name, String city, String postalCode, int surfaceArea) {

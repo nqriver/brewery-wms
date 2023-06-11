@@ -5,13 +5,14 @@ import io.quarkus.security.UnauthorizedException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.Response;
 import pl.nqriver.brewery.api.BreweryResource;
 import pl.nqriver.brewery.domain.Brewery;
 import pl.nqriver.brewery.domain.BreweryFacade;
-import pl.nqriver.managers.BreweryManagerResource.*;
+import pl.nqriver.commons.ServiceErrorCode;
+import pl.nqriver.commons.ServiceException;
+import pl.nqriver.managers.api.BreweryManagerResource.*;
+import pl.nqriver.managers.domain.BreweryManager;
+import pl.nqriver.managers.domain.BreweryManagerRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,9 +33,9 @@ public class BreweryManagerFacade {
     @Transactional
     public BreweryManagerCreateResponse registerNewBreweryManager(ManagerRegistrationRequest registrationRequest) {
         if (managerRepository.findByLogin(registrationRequest.login()).isPresent()) {
-            throw new BadRequestException("Login already taken");
+            throw new ServiceException(ServiceErrorCode.MANAGER_LOGIN_TAKEN);
         } else if (managerRepository.findByEmail(registrationRequest.email()).isPresent()) {
-            throw new BadRequestException("Email already taken");
+            throw new ServiceException(ServiceErrorCode.MANAGER_EMAIL_TAKEN);
         }
 
         List<Brewery> breweries = breweryFacade.findAll();
@@ -58,17 +59,17 @@ public class BreweryManagerFacade {
     }
 
     public List<BreweryResource.BreweryResponse> getManagedBreweries(UUID managerId) {
-        BreweryManager manager = managerRepository.findByIdOptional(managerId).orElseThrow(NotFoundException::new);
+        BreweryManager manager = findOne(managerId);
         return manager.getManagedBreweries().stream().map(Brewery::toResponse).toList();
     }
 
     @Transactional
     public void removePermissionForBrewery(UUID managerId, UUID breweryId) {
-        BreweryManager manager = managerRepository.findByIdOptional(managerId).orElseThrow(NotFoundException::new);
+        BreweryManager manager = findOne(managerId);
         Brewery brewery = manager.getManagedBreweries()
                 .stream()
                 .filter(e -> e.getId().equals(breweryId))
-                .findFirst().orElseThrow(() -> new BadRequestException("This brewery is not managed by selected manager"));
+                .findFirst().orElseThrow(() -> new ServiceException(ServiceErrorCode.INVALID_BREWERY));
         manager.removePermissionForBrewery(brewery);
         managerRepository.persist(manager);
 
@@ -76,18 +77,23 @@ public class BreweryManagerFacade {
 
     @Transactional
     public void removeAllPermissions(UUID managerId) {
-        BreweryManager manager = managerRepository.findByIdOptional(managerId).orElseThrow(NotFoundException::new);
+        BreweryManager manager = findOne(managerId);
         manager.removeAllPermissions();
         managerRepository.persist(manager);
     }
 
     public BreweryManagerResponse get(UUID managerId) {
-        return managerRepository.findByIdOptional(managerId).orElseThrow(NotFoundException::new).toResponse();
+        return findOne(managerId)
+                .toResponse();
+    }
+
+    private BreweryManager findOne(UUID managerId) {
+        return managerRepository.findByIdOptional(managerId).orElseThrow(() -> new ServiceException(ServiceErrorCode.MANAGER_NOT_FOUND));
     }
 
     @Transactional
     public BreweryManagerResponse edit(UUID managerId, ManagerEditRequest editRequest) {
-        BreweryManager manager = managerRepository.findByIdOptional(managerId).orElseThrow(NotFoundException::new);
+        BreweryManager manager = findOne(managerId);
 
         if (editRequest.email() != null) {
             assertEmailIsNotUsed(editRequest.email(), managerId);
@@ -110,7 +116,7 @@ public class BreweryManagerFacade {
     private void assertEmailIsNotUsed(String email, UUID managerId) {
         managerRepository.find("email", email).firstResultOptional().ifPresent(found -> {
             if (!managerId.equals(found.getId())) {
-                throw new BadRequestException("Email already used", Response.status(400).entity("Email in use").build());
+                throw new ServiceException(ServiceErrorCode.MANAGER_EMAIL_TAKEN);
             }
         });
     }
@@ -118,7 +124,7 @@ public class BreweryManagerFacade {
     private void assertLoginIsNotUsed(String login, UUID managerId) {
         managerRepository.find("login", login).firstResultOptional().ifPresent(found -> {
             if (!managerId.equals(found.getId())) {
-                throw new BadRequestException("Login already used", Response.status(400).entity("Email in use").build());
+                throw new ServiceException(ServiceErrorCode.MANAGER_LOGIN_TAKEN);
             }
         });
     }
