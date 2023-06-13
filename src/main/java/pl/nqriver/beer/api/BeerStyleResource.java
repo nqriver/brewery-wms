@@ -3,12 +3,10 @@ package pl.nqriver.beer.api;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import pl.nqriver.beer.domain.BeerFacade;
-import pl.nqriver.beer.domain.BeerStyle;
-import pl.nqriver.beer.domain.BeerStyleRepository;
+import pl.nqriver.beer.api.BeerResource.BeerResponse;
+import pl.nqriver.beer.BeerFacade;
 
 import java.util.List;
 
@@ -18,35 +16,28 @@ import java.util.List;
 @ApplicationScoped
 @Authenticated
 public class BeerStyleResource {
-
-    @Inject
-    BeerStyleRepository beerStyleRepository;
     @Inject
     BeerFacade beerFacade;
 
     @GET
-    public List<BeerStyle> getBeerStyles() {
-        return beerStyleRepository.listAll();
+    public List<BeerStyleDto> getBeerStyles() {
+        return beerFacade.findAllBeerStyles();
     }
 
     @GET
     @Path("/{id}/beers")
-    public List<BeerResource.BeerResponse> getBeersByStyle(@PathParam("id") Long id) {
+    public List<BeerResponse> getBeersByStyle(@PathParam("id") Long id) {
         return beerFacade.getBeersByStyle(id);
-    }
-
-
-    @POST
-    @Transactional
-    public BeerStyle addBeerStyle(BeerStyle beerStyle) {
-        beerStyleRepository.persist(beerStyle);
-        return beerStyle;
     }
 
     @GET
     @Path("/{id}")
-    public BeerStyle getBeerStyle(@PathParam("id") Long id) {
-        return beerStyleRepository.findById(id);
+    public BeerStyleDto getBeerStyle(@PathParam("id") Long id) {
+        return beerFacade.findBeerStyle(id);
     }
+
+    public record BeerStyleDto(Long id, String name) {
+    }
+
 }
 

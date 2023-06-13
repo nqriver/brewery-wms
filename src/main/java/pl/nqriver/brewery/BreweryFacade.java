@@ -1,9 +1,11 @@
-package pl.nqriver.brewery.domain;
+package pl.nqriver.brewery;
 
 import io.smallrye.mutiny.tuples.Tuple2;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import pl.nqriver.beer.domain.Beer;
+import pl.nqriver.brewery.domain.Brewery;
+import pl.nqriver.brewery.domain.BreweryRepository;
 
 import java.util.List;
 import java.util.Optional;

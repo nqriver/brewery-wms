@@ -13,6 +13,7 @@ val quarkusPlatformArtifactId: String by project
 val quarkusPlatformVersion: String by project
 
 dependencies {
+    implementation("io.quarkus:quarkus-redis-client")
     implementation("io.quarkus:quarkus-scheduler")
     implementation("io.quarkus:quarkus-elytron-security-common")
     implementation("io.quarkus:quarkus-smallrye-jwt")

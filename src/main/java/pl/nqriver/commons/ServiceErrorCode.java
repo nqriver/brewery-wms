@@ -10,7 +10,9 @@ public enum ServiceErrorCode {
     MANAGER_NOT_FOUND("BMS05", "Manager cannot be found", Response.Status.NOT_FOUND),
     INVALID_BREWERY("BMS06", "This brewery is not managed by chosen manager", Response.Status.BAD_REQUEST),
     BEER_STYLE_NOT_FOUND("BM07", "Beer style cannot be found", Response.Status.NOT_FOUND),
-    BEER_NOT_FOUND("BM08", "Beer cannot be found", Response.Status.NOT_FOUND);
+    BEER_NOT_FOUND("BM08", "Beer cannot be found", Response.Status.NOT_FOUND),
+    BEER_ALREADY_PRODUCED("BMS09", "Beer is already produced by chosen brewery", Response.Status.BAD_REQUEST),
+    BEER_IS_NOT_PRODUCED("BMS10", "Beer is not produced by chosen brewery", Response.Status.BAD_REQUEST);
 
 
     private final String code;

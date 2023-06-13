@@ -4,7 +4,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import pl.nqriver.beer.domain.BeerFacade;
+import jakarta.ws.rs.core.Response;
+import pl.nqriver.beer.BeerFacade;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,19 +20,26 @@ public class BeerResource {
     BeerFacade beerFacade;
 
     @GET
-    public List<BeerResponse> getBeers() {
+    public List<BeerResponse> getAll() {
         return beerFacade.listAll();
     }
 
     @POST
-    public BeerResponse addBeer(CreateBeerRequest createBeerRequest) {
+    public BeerResponse add(CreateBeerRequest createBeerRequest) {
         return beerFacade.addNewBeer(createBeerRequest);
     }
 
     @GET
     @Path("/{id}")
-    public BeerResponse getBeer(@PathParam("id") UUID id) {
+    public BeerResponse get(@PathParam("id") UUID id) {
         return beerFacade.findById(id);
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response delete(@PathParam("id") UUID id) {
+        beerFacade.deleteById(id);
+        return Response.noContent().build();
     }
 
     public record CreateBeerRequest(

@@ -5,6 +5,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import pl.nqriver.commons.LoggedInUserService;
 import pl.nqriver.stock.domain.BreweryProductionBatch;
 import pl.nqriver.stock.domain.BreweryProductionBatchDao;
 
@@ -20,6 +21,9 @@ public class BreweryProductionBatchResource {
 
     @Inject
     BreweryProductionBatchDao dao;
+
+    @Inject
+    LoggedInUserService loggedInUserService;
 
     @GET
     @Path("batches/{id}")
@@ -46,6 +50,7 @@ public class BreweryProductionBatchResource {
     @Path("/breweries/{breweryId}/batches")
     @GET
     public List<BreweryProductionBatch> getByBreweryId(@PathParam("breweryId") UUID breweryId) {
+        loggedInUserService.authorizeLoggedInManagerForBrewery(breweryId);
         return dao.findByBreweryId(breweryId).all();
     }
 

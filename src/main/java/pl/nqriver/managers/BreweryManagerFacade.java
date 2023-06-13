@@ -7,7 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import pl.nqriver.brewery.api.BreweryResource;
 import pl.nqriver.brewery.domain.Brewery;
-import pl.nqriver.brewery.domain.BreweryFacade;
+import pl.nqriver.brewery.BreweryFacade;
 import pl.nqriver.commons.ServiceErrorCode;
 import pl.nqriver.commons.ServiceException;
 import pl.nqriver.managers.api.BreweryManagerResource.*;
@@ -15,6 +15,7 @@ import pl.nqriver.managers.domain.BreweryManager;
 import pl.nqriver.managers.domain.BreweryManagerRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -44,6 +45,11 @@ public class BreweryManagerFacade {
         managerRepository.persist(manager);
         JwtTokenResponse jwt = new JwtTokenResponse(jwtService.getJwt(manager));
         return new BreweryManagerCreateResponse(manager.toResponse(), jwt);
+    }
+
+    public boolean isBreweryManagedByManager(UUID managerId, UUID breweryId) {
+        BreweryManager manager = findOne(managerId);
+        return manager.getManagedBreweries().stream().map(Brewery::getId).anyMatch(id -> Objects.equals(id, breweryId));
     }
 
 

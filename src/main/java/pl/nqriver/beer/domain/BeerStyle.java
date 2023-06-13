@@ -1,6 +1,7 @@
 package pl.nqriver.beer.domain;
 
 import jakarta.persistence.*;
+import pl.nqriver.beer.api.BeerStyleResource;
 
 @Entity
 @Table(name = "beer_styles")
@@ -13,6 +14,18 @@ public class BeerStyle {
     private String name;
 
     public BeerStyle() {
+    }
+
+    public BeerStyle(String name) {
+        this.name = name;
+    }
+
+    public static BeerStyle fromDto(BeerStyleResource.BeerStyleDto dto) {
+        return new BeerStyle(dto.name());
+    }
+
+    public BeerStyleResource.BeerStyleDto toDto() {
+        return new BeerStyleResource.BeerStyleDto(this.id, this.name);
     }
 
     public Long getId() {

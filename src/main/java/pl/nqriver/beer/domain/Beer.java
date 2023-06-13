@@ -2,7 +2,9 @@ package pl.nqriver.beer.domain;
 
 import jakarta.persistence.*;
 import pl.nqriver.beer.api.BeerResource;
+import pl.nqriver.brewery.domain.Brewery;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -37,6 +39,9 @@ public class Beer {
     @Column(name = "price")
     private double price;
 
+    @ManyToMany(mappedBy = "producedBeers")
+    private List<Brewery> producingBreweries;
+
     public static Beer fromRequest(BeerResource.CreateBeerRequest createBeerRequest, BeerStyle style) {
         Beer beer = new Beer();
         beer.setColor(createBeerRequest.color());
@@ -63,6 +68,10 @@ public class Beer {
                 getDescription(),
                 getPrice()
         );
+    }
+
+    public void removeFromProducingBreweries() {
+        producingBreweries.forEach(e -> e.closeProduction(this));
     }
 
     public UUID getId() {

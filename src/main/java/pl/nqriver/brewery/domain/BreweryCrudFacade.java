@@ -8,7 +8,7 @@ import jakarta.transaction.Transactional;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import pl.nqriver.beer.api.BeerResource.BeerResponse;
 import pl.nqriver.beer.domain.Beer;
-import pl.nqriver.beer.domain.BeerFacade;
+import pl.nqriver.beer.BeerFacade;
 import pl.nqriver.brewery.api.BreweryResource;
 import pl.nqriver.brewery.api.BreweryResource.BreweryDetailedResponse;
 import pl.nqriver.brewery.api.BreweryResource.BreweryResponse;
@@ -34,8 +34,7 @@ public class BreweryCrudFacade {
 
     @Transactional
     public BreweryResponse addBreweryImages(UUID breweryId, List<FileUpload> uploadedFiles) {
-        Brewery brewery = breweryRepository.findByIdOptional(breweryId)
-                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+        Brewery brewery = findOne(breweryId);
 
         uploadedFiles.stream()
                 .map(this::convertImgToByteArray)
@@ -62,16 +61,14 @@ public class BreweryCrudFacade {
     }
 
     public BreweryDetailedResponse get(UUID id) {
-        Brewery brewery = breweryRepository.findByIdOptional(id)
-                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+        Brewery brewery = findOne(id);
 
         List<BeerResponse> producedBeers = brewery.getProducedBeers().stream().map(Beer::toResponse).toList();
         return new BreweryDetailedResponse(brewery.toResponse(), producedBeers);
     }
 
     public List<BeerResponse> getProducedBeers(UUID breweryId) {
-        return breweryRepository.findByIdOptional(breweryId)
-                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND))
+        return findOne(breweryId)
                 .getProducedBeers()
                 .stream()
                 .map(Beer::toResponse)
@@ -89,19 +86,37 @@ public class BreweryCrudFacade {
 
     @Transactional
     public BeerResponse addProducedBeer(UUID breweryId, UUID beerId) {
-        Brewery brewery = breweryRepository.findByIdOptional(breweryId)
-                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+        Brewery brewery = findOne(breweryId);
         Beer beer = beerFacade.find(beerId);
+
+        if (brewery.getProducedBeers().contains(beer)) {
+            throw new ServiceException(ServiceErrorCode.BEER_ALREADY_PRODUCED);
+        }
         brewery.addBeer(beer);
         breweryRepository.persist(brewery);
         return beer.toResponse();
     }
 
+    @Transactional
+    public void closeBeerProduction(UUID breweryId, UUID beerId) {
+        Brewery brewery = findOne(breweryId);
+        Beer beer = beerFacade.find(beerId);
+        if (!brewery.producesBeer(beer)) {
+            throw new ServiceException(ServiceErrorCode.BEER_IS_NOT_PRODUCED);
+        }
+        brewery.closeProduction(beer);
+        breweryRepository.persist(brewery);
+    }
+
+    private Brewery findOne(UUID breweryId) {
+        return breweryRepository.findByIdOptional(breweryId)
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+    }
+
 
     @Transactional
     public BreweryResponse edit(UUID breweryId, BreweryResource.BreweryEditRequest editRequest) {
-        Brewery brewery = breweryRepository.findByIdOptional(breweryId)
-                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BREWERY_NOT_FOUND));
+        Brewery brewery = findOne(breweryId);
 
         if (editRequest.city() != null) {
             brewery.setCity(editRequest.city());

@@ -1,4 +1,4 @@
-package pl.nqriver.beer.domain;
+package pl.nqriver.beer;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -6,6 +6,12 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import pl.nqriver.beer.api.BeerResource;
 import pl.nqriver.beer.api.BeerResource.BeerResponse;
+import pl.nqriver.beer.api.BeerStyleResource;
+import pl.nqriver.beer.api.BeerStyleResource.BeerStyleDto;
+import pl.nqriver.beer.domain.Beer;
+import pl.nqriver.beer.domain.BeerRepository;
+import pl.nqriver.beer.domain.BeerStyle;
+import pl.nqriver.beer.domain.BeerStyleRepository;
 import pl.nqriver.commons.ServiceErrorCode;
 import pl.nqriver.commons.ServiceException;
 
@@ -69,5 +75,21 @@ public class BeerFacade {
 
     public List<Beer> getAll() {
         return beerRepository.listAll();
+    }
+
+    @Transactional
+    public void deleteById(UUID id) {
+        Beer beer = findOne(id);
+        beer.removeFromProducingBreweries();
+        beerRepository.delete(beer);
+    }
+
+    public List<BeerStyleDto> findAllBeerStyles() {
+        return beerStyleRepository.findAll().stream().map(BeerStyle::toDto).toList();
+    }
+
+    public BeerStyleDto findBeerStyle(Long id) {
+        return beerStyleRepository.findByIdOptional(id)
+                .orElseThrow(() -> new ServiceException(ServiceErrorCode.BEER_STYLE_NOT_FOUND)).toDto();
     }
 }

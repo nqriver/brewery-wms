@@ -8,7 +8,7 @@ import jakarta.inject.Inject;
 import net.bytebuddy.utility.RandomString;
 import pl.nqriver.beer.domain.Beer;
 import pl.nqriver.brewery.domain.Brewery;
-import pl.nqriver.brewery.domain.BreweryFacade;
+import pl.nqriver.brewery.BreweryFacade;
 
 import java.time.Duration;
 import java.time.Instant;

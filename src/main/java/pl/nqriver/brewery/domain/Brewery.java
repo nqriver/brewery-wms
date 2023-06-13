@@ -144,4 +144,12 @@ public class Brewery {
     public void addBeer(Beer beer) {
         this.producedBeers.add(beer);
     }
+
+    public boolean producesBeer(Beer beer) {
+        return producedBeers.contains(beer);
+    }
+
+    public void closeProduction(Beer beer) {
+        producedBeers.remove(beer);
+    }
 }

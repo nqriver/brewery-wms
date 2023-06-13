@@ -100,7 +100,7 @@ public class BreweryManagerResource {
 
 
     public record ManagerRegistrationRequest(String name, String login, String password, String email,
-                                             String phoneNumber, UUID managedBreweryId) {
+                                             String phoneNumber) {
     }
 
 }
