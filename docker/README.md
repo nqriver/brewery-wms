@@ -15,15 +15,15 @@ docker compose up
 
 ### Postgres
 
-Kontener PostgreSQL wykorzystuje najnowszy obraz i jest konfigurowany za pomocą zmiennych środowiskowych, aby utworzyć bazę danych o nazwie "brewery-wms" z użytkownikiem "BREWERY_ADMIN" i hasłem "BREWERY". Dane są przechowywane w tomie Docker o nazwie "./postgres/data".
+Kontener PostgreSQL wykorzystuje najnowszy obraz i jest konfigurowany za pomocą zmiennych środowiskowych, aby utworzyć bazę danych o nazwie "brewery-wms" z użytkownikiem "BREWERY_ADMIN" i hasłem "BREWERY". Dane są przechowywane w wolumenie Docker o nazwie "./postgres/data".
 
 ### Redis
 
-Kontener Redis wykorzystuje obraz w wersji 5.0.6. Redis jest konfigurowany do pracy w trybie "append only" dla zwiększonej trwałości danych. Dane są przechowywane w tomie Docker o nazwie "./redis/data".
+Kontener Redis wykorzystuje obraz w wersji 5.0.6. Redis jest konfigurowany do pracy w trybie "append only" dla zwiększonej trwałości danych. Dane są przechowywane w wolumenie Docker o nazwie "./redis/data".
 
 ### ScyllaDB
 
-Kontener ScyllaDB wykorzystuje najnowszy obraz. Korzysta z dwóch rdzeni procesora dla poprawy wydajności. Dane są przechowywane w tomie Docker o nazwie "./scylla/data".
+Kontener ScyllaDB wykorzystuje najnowszy obraz. Korzysta z dwóch rdzeni procesora dla poprawy wydajności. Dane są przechowywane w wolumenie Docker o nazwie "./scylla/data".
 
 ### Quarkus-app
 
