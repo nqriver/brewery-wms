@@ -1,0 +1,85 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:latest
+    container_name: brewery-wms-postgres
+    environment:
+      POSTGRES_USER: BREWERY_ADMIN
+      POSTGRES_PASSWORD: BREWERY
+      POSTGRES_DB: brewery-wms
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - brewery-wms-network
+
+  redis:
+    image: redis:5.0.6
+    container_name: brewery-wms-redis-cache
+    command: redis-server --appendonly yes --requirepass REDIS_SECRET
+    volumes:
+      - ./redis/data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - brewery-wms-network
+    restart: always
+
+
+  scylladb:
+    image: scylladb/scylla:latest
+    container_name: brewery-wms-scylla
+    command: --smp 1 --overprovisioned 1 --developer-mode 1
+    ports:
+      - "9042:9042"
+    volumes:
+      - ./scylla/init.cql:/init.cql
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        until cqlsh -f /init.cql; do
+          echo "cqlsh failed, retrying in 5 secs..."
+          sleep 5
+        done &
+        exec /docker-entrypoint.py --smp 1 --overprovisioned 1 --developer-mode 1
+    networks:
+      - brewery-wms-network
+
+  quarkus-app:
+    build:
+      context: ..
+      dockerfile: ./src/main/docker/Dockerfile.jvm
+    environment:
+      QUARKUS_DATASOURCE_USERNAME: BREWERY_ADMIN
+      QUARKUS_DATASOURCE_PASSWORD: BREWERY
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/brewery-wms
+      QUARKUS_HIBERNATE-ORM_DATABASE_GENERATION: update
+      QUARKUS_CASSANDRA_CONTACT_POINTS: scylladb:9042
+      QUARKUS_CASSANDRA_LOCAL_DATACENTER: datacenter1
+      QUARKUS_CASSANDRA_KEYSPACE: breweries_wms
+      QUARKUS_HTTP_CORS: true
+      QUARKUS_HTTP_CORS_ORIGINS: /.*/
+      QUARKUS_HIBERNATE-ORM_SQL-LOAD-SCRIPT: import-dev.sql
+      QUARKUS_REDIS_HOSTS: redis://:REDIS_SECRET@redis:6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - scylladb
+    networks:
+      - brewery-wms-network
+
+  test-linux-client:
+    container_name: linux-client
+    image: alpine
+    command: /bin/sh
+    tty: true
+    networks:
+      - brewery-wms-network
+    depends_on:
+      - quarkus-app
+
+networks:
+  brewery-wms-network:
